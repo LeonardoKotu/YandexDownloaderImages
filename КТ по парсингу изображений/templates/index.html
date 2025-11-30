@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Parser</title>
+    <style>
+        body {
+            font-family: Arial;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        .images {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .image-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        .image-card img {
+            max-width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Parser</h1>
+    
+    <input type="text" id="category" placeholder="Enter category">
+    <button onclick="parseImages()">Start</button>
+
+    <div id="images" class="images"></div>
+
+    <script>
+        async function parseImages() {
+            const category = document.getElementById('category').value;
+            const response = await fetch('/parse', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `category=${category}`
+            });
+            
+            const data = await response.json();
+            displayImages(data.images);
+        }
+
+        function displayImages(images) {
+            const container = document.getElementById('images');
+            container.innerHTML = '';
+
+            images.forEach(img => {
+                const card = document.createElement('div');
+                card.className = 'image-card';
+                card.innerHTML = `
+                    <img src="${img.url}" alt="${img.filename}">
+                    <br>
+                    <button onclick="downloadImage('${img.url}', '${img.filename}')">Download</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function downloadImage(url, filename) {
+            window.open(`/download?url=${encodeURIComponent(url)}&filename=${filename}`, '_blank');
+        }
+    </script>
+</body>
+</html>
